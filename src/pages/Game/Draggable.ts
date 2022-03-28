@@ -1,28 +1,29 @@
+import EventEmitter from 'events';
 import { onValue, ref, update } from 'firebase/database';
 import { DisplayObject, InteractionData, InteractionEvent } from 'pixi.js';
-import { realtimeDb } from '../firebase/firebase';
+import { realtimeDb } from '../../firebase/firebase';
 
-const addDraggingHandler = ({ displayObject, onDragStart, onDragEnd }: { displayObject: DisplayObject; onDragStart(): void; onDragEnd(): void }) => {
+const addDraggingHandler = ({ displayObject, gameEvents }: { displayObject: DisplayObject; gameEvents: EventEmitter }) => {
   let dragging = false;
   let data: InteractionData | null = null;
 
-  const pawn = ref(realtimeDb, 'games/-MysvH2rnjMjkWXY01rx/player1/pawns/0');
-  onValue(pawn, (snapshot) => {
-    const { position } = snapshot.val();
-    displayObject.x = position.x;
-    displayObject.y = position.y;
-  });
+  // const pawn = ref(realtimeDb, 'games/-MysvH2rnjMjkWXY01rx/player1/pawns/0');
+  // onValue(pawn, (snapshot) => {
+  //   const { position } = snapshot.val();
+  //   displayObject.x = position.x;
+  //   displayObject.y = position.y;
+  // });
 
   const handleMouseDown = (e: InteractionEvent) => {
     data = e.data;
     dragging = true;
-    onDragStart();
+    gameEvents.emit('isPawnDragged', true);
   };
 
   const handleMouseUp = (e: InteractionEvent) => {
     dragging = false;
     data = null;
-    onDragEnd();
+    gameEvents.emit('isPawnDragged', false);
   };
 
   const handleMouseMove = (e: InteractionEvent) => {
@@ -30,12 +31,12 @@ const addDraggingHandler = ({ displayObject, onDragStart, onDragEnd }: { display
       const newPosition = data!.getLocalPosition(displayObject.parent);
       displayObject.x = newPosition.x;
       displayObject.y = newPosition.y;
-      update(pawn, {
-        position: {
-          x: newPosition.x,
-          y: newPosition.y,
-        },
-      });
+      // update(pawn, {
+      //   position: {
+      //     x: newPosition.x,
+      //     y: newPosition.y,
+      //   },
+      // });
     }
   };
 

@@ -3,19 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { auth, logInWithEmailAndPassword, signInWithGoogle } from '../../firebase/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import './Login.css';
+import { Routes } from '../Router';
+import useStore from '../../hooks/useStore';
 
 const Login: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
+  const { userStore } = useStore();
   const navigate = useNavigate();
+
   useEffect(() => {
     if (loading) {
-      // maybe trigger a loading screen
       return;
     }
-    if (user) navigate('/dashboard');
-  }, [user, loading]);
+    if (user) {
+      userStore.login(user);
+      navigate(Routes.dashboard);
+    }
+  }, [user, loading, userStore, navigate]);
+
   return (
     <div className="login">
       <div className="login__container">
